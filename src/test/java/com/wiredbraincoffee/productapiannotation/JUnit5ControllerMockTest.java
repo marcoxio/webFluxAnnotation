@@ -4,33 +4,35 @@ import com.wiredbraincoffee.productapiannotation.controller.ProductController;
 import com.wiredbraincoffee.productapiannotation.model.Product;
 import com.wiredbraincoffee.productapiannotation.model.ProductEvent;
 import com.wiredbraincoffee.productapiannotation.repository.ProductRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class ProductApiAnnotationApplicationTests {
+@ExtendWith(SpringExtension.class)
+public class JUnit5ControllerMockTest {
     private WebTestClient client;
 
     private List<Product> expectedList;
 
-    @Autowired
+    @MockBean
     private ProductRepository repository;
 
-    @Before
-    public void beforeEach() {
+    @BeforeEach
+    void beforeEach() {
         this.client =
                 WebTestClient
                         .bindToController(new ProductController(repository))
@@ -38,12 +40,15 @@ public class ProductApiAnnotationApplicationTests {
                         .baseUrl("/products")
                         .build();
 
-        this.expectedList =
-                repository.findAll().collectList().block();
+        this.expectedList = Arrays.asList(
+                new Product("1", "Big Latte", 2.99)
+        );
     }
 
     @Test
-    public void testGetAllProducts() {
+    void testGetAllProducts() {
+        when(repository.findAll()).thenReturn(Flux.fromIterable(this.expectedList));
+
         client
                 .get()
                 .uri("/")
@@ -55,18 +60,23 @@ public class ProductApiAnnotationApplicationTests {
     }
 
     @Test
-    public void testProductInvalidIdNotFound() {
+    void testProductInvalidIdNotFound() {
+        String id = "aaa";
+        when(repository.findById(id)).thenReturn(Mono.empty());
+
         client
                 .get()
-                .uri("/aaa")
+                .uri("/{id}", id)
                 .exchange()
                 .expectStatus()
                 .isNotFound();
     }
 
     @Test
-    public void testProductIdFound() {
-        Product expectedProduct = expectedList.get(0);
+    void testProductIdFound() {
+        Product expectedProduct = this.expectedList.get(0);
+        when(repository.findById(expectedProduct.getId())).thenReturn(Mono.just(expectedProduct));
+
         client
                 .get()
                 .uri("/{id}", expectedProduct.getId())
@@ -78,7 +88,7 @@ public class ProductApiAnnotationApplicationTests {
     }
 
     @Test
-    public void testProductEvents() {
+    void testProductEvents() {
         ProductEvent expectedEvent =
                 new ProductEvent(0L, "Product Event");
 
@@ -97,5 +107,4 @@ public class ProductApiAnnotationApplicationTests {
                 .thenCancel()
                 .verify();
     }
-
 }

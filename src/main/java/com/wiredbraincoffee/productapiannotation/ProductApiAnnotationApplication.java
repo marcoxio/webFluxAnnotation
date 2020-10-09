@@ -1,7 +1,7 @@
 package com.wiredbraincoffee.productapiannotation;
 
 import com.wiredbraincoffee.productapiannotation.model.Product;
-import com.wiredbraincoffee.productapiannotation.repository.IProductRepository;
+import com.wiredbraincoffee.productapiannotation.repository.ProductRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +17,7 @@ public class ProductApiAnnotationApplication {
 	}
 
 	@Bean
-	CommandLineRunner init(ReactiveMongoOperations operations, IProductRepository repository) {
+	CommandLineRunner init(ReactiveMongoOperations operations, ProductRepository repository) {
 		return args -> {
 			Flux<Product> productFlux = Flux.just(
 					new Product(null, "Big Latte", 2.99),

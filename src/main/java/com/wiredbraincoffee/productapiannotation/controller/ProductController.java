@@ -2,7 +2,7 @@ package com.wiredbraincoffee.productapiannotation.controller;
 
 import com.wiredbraincoffee.productapiannotation.model.Product;
 import com.wiredbraincoffee.productapiannotation.model.ProductEvent;
-import com.wiredbraincoffee.productapiannotation.repository.IProductRepository;
+import com.wiredbraincoffee.productapiannotation.repository.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +16,9 @@ import java.time.Duration;
 @RequestMapping("/products")
 public class ProductController {
 
-    private IProductRepository repository;
+    private ProductRepository repository;
 
-    public ProductController(IProductRepository repository) {
+    public ProductController(ProductRepository repository) {
         this.repository = repository;
     }
 
